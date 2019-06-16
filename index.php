@@ -9,8 +9,8 @@
     <title>入群答题</title>
  
     <link type="text/css" rel="stylesheet" href="/static/css/bootstrap.min.css" /> 
-    <script src="/static/js/bootstrap.min.css"></script>
-
+    <script src="/static/js/clipboard.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
 </head>
 <body>
     <!-- 这里是大标题 -->
@@ -38,10 +38,7 @@
         }
 
         function check_answer($name,$anw) {
-            $q = search_question($name);
-            if( is_null($q) ) {
-                return -1;
-            }
+            $q = $name;
             if(in_array($anw, $q["answer"])) {
                 return 1;
             } else {
@@ -55,36 +52,60 @@
                 return;
             }
             global $data;
+
             $questions = $data["option"][$grade];
             
             $total = count($questions);
+            $all = count($data["questions"]);
+
+            $g1 = 80 / $total;
+            $g2 = 40 / ($all - $total);
             $c = 0;
 
-            foreach ($questions as $q) {
-                if(isset($_POST[$q])) {
-                    $ans = $_POST[$q];
+            foreach ($data["questions"] as $q) {
+                if(isset($_POST[$q["name"]])) {
+                    $ans = $_POST[$q["name"]];
                 } else {
                     $ans = "";
                 }
                 $ret = check_answer($q, $ans);
                 if($ret == 1) {
-                    $c += 1;
+                    if(in_array($q["name"], $questions)) {
+                        $c += $g1;
+                    } else {
+                        $c += $g2;
+                    }
+
                 } else if ($ret == -1) {
                     show_msg("非法的题目（请联系管理员，也请不要想渗透）",0);
                     return;
                 }
             }
-            get_result($total,$c);
+            get_result($c);
         }
 
-        function get_result($total,$c) {
+        function flag_gen($c, $flag) {
+            return $flag . "_" . $c;
+        }
+
+        function get_result($c) {
             global $data;
-            $ret = $c/$total * 100;
-            if( $ret >= 70) {
-                $msg = "正确率：".$ret."% .恭喜，请将下面的口令输入在群验证的答案处。入群口令是:".$data["password"];
+            if($c >= 100) {
+                $c = 100;
+            }
+            
+            if( $c >= 60) {
+                $flag = flag_gen(intval($c), $data["password"]);
+                $msg = "得分：".intval($c)." .恭喜，请将下面的口令输入在群验证的答案处。";
+                $msg .= "<div class=\"input-group\">";
+                $msg .= "<input id=\"foo\" value=\"". $flag ."\">\n";
+                $msg .= "<div class=\"input-group-append\">\n";
+                $msg .= "<button class=\"ccc btn btn-outline-success\" data-clipboard-target=\"#foo\" >点击复制</button></div>\n";
+                $msg .= "<script> var clipboard = new ClipboardJS('.ccc'); </script>\n";
+                $msg .= "</div>";
                 show_msg($msg, 1);
             } else {
-                $msg = "正确率：".$ret."% .非常遗憾，没有通过测试";
+                $msg = "得分：".intval($c)." .非常遗憾，没有通过测试";
                 show_msg($msg, 0);
             }
         }
