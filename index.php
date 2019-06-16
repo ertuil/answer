@@ -95,7 +95,7 @@
             }
             
             if( $c >= 60) {
-                $flag = flag_gen(intval($c), $data["password"]);
+                $flag = $data["password"];
                 $msg = "得分：".intval($c)." .恭喜，请将下面的口令输入在群验证的答案处。";
                 $msg .= "<div class=\"input-group\">";
                 $msg .= "<input id=\"foo\" value=\"". $flag ."\">\n";
