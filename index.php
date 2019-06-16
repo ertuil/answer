@@ -81,7 +81,7 @@
             global $data;
             $ret = $c/$total * 100;
             if( $ret >= 70) {
-                $msg = "正确率：".$ret."% .恭喜，进去口令是:".$data["password"];
+                $msg = "正确率：".$ret."% .恭喜，请将下面的口令输入在群验证的答案处。入群口令是:".$data["password"];
                 show_msg($msg, 1);
             } else {
                 $msg = "正确率：".$ret."% .非常遗憾，没有通过测试";
